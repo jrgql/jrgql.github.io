@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jrGQL</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/addon/fold/foldgutter.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/addon/lint/lint.min.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.2/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/addon/fold/foldcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/addon/fold/foldgutter.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/addon/fold/brace-fold.min.js"></script>
+  <script src="https://rawgithub.com/zaach/jsonlint/79b553fb65c192add9066da64043458981b3972b/lib/jsonlint.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/addon/lint/lint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.0/addon/lint/json-lint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.0/d3.min.js"></script>
+
+  <!-- Fake require() -->
+  <script type="text/javascript">window.exports = {}; let require = () => exports;</script>
+  <script src="Database.js"></script>
+  <script src="examples.js"></script>
+  <script src="JsonHighlighter.js"></script>
+  <script src="JsonRegExpGraphQueryLanguage.js"></script>
+  <script src="GraphDbEditor.js"></script>
+  <script src="LandingPage.js"></script>
+  <!-- Import module.exports to window -->
+  <script type="text/javascript">for(let c in exports) { window[c] = exports[c] }</script>
+  <style type="text/css">
+    body { background-color: #AAAAAA; }
+    pre code .parenthesis { font-weight: bold; color: #000000; }
+    pre code .separator { font-weight: bold; color: #FF0000; }
+    pre code .key { color: #2448CC; }
+    pre code .filter { border: 1px dashed #24CC48; color: #24CC48; }
+    pre code .mutation { border: 1px dashed #2448CC; color: #2448CC; }
+    pre code .comment { font-style: italic; color: #999999; }
+    pre code .action { font-style: italic; border: 1px solid #DDBB00; color: #DDBB00; }
+    pre code .operator { border: 1px dotted #CC2448; color: #CC2448; }
+    pre code .value { font-style: italic; color: #888888; }
+    .CodeMirror { border: 1px solid #ddd; }
+    .CodeMirror-scroll { min-height: 250px; }
+    .CodeMirror pre { padding-left: 7px; line-height: 1.25; }
+    .svg-no-select { user-select:none; }
+    .modal-dialog { width: 98%; height: 92%; padding: 0; }
+    .modal-content { height: 99%; }
+    .modal-body { height: 91%; }
+  </style>
+</head>
+<body>
+  <nav id="navigation" class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">jrGQL</a>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Examples</a></li>
+          <li><a href="#try">Try</a></li>
+          <li><a href="#download">Download</a></li>
+          <li><a href="#changelog">Changelog</a></li>
+          <li><a href="#drivers">Drivers</a></li>
+          <li><a href="#license">License</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="https://github.com/Jamesgt/jrgql"><img src="GitHub-Mark-32px.png" style="width: 22px; height: 22px;" /> Star</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div id="examples" class="well well-sm container-fluid">
+    <div class="collapse in" id="collapseExamples">
+      <div class="col-sm-2">
+        <div class="list-group" id="exampleContainer">
+          <a class="list-group-item template hidden"></a>
+        </div>
+      </div>
+      <div class="col-sm-10">
+        <div class="panel panel-default">
+          <div id="text" class="panel-heading"></div>
+          <div class="panel-body">
+            <div class="col-sm-6">
+              <pre><code id="code1"></code></pre>
+            </div>
+            <div class="col-sm-6">
+              <pre><code id="code2"></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-xs btn-default center-block" type="button" data-toggle="collapse" data-target="#collapseExamples" aria-expanded="false" aria-controls="collapseExamples">
+      <span class="dropup"><span class="caret"></span></span>
+      Examples
+      <span class="caret"></span>
+    </button>
+  </div>
+  <div id="try" class="well well-sm">
+    <div class="container-fluid">
+      <div id="buttons" class="row">
+        <div class="col-sm-4">
+          <div class="container-fluid">
+            <div class="row">
+              <button id="fullScreen" type="button" class="btn btn-xs btn-default" data-toggle="modal" data-target="#modal">
+                <span class="glyphicon glyphicon-fullscreen"></span>
+              </button>
+              <div class="btn-group btn-group-xs" role="group">
+                <div id="editorMode" class="btn-group" data-toggle="buttons">
+                  <label class="btn btn-xs btn-default">
+                    <input type="radio" name="mode" id="graphMode" autocomplete="off">Graph
+                  </label>
+                  <label class="btn btn-xs btn-default">
+                    <input type="radio" name="mode" id="jsonMode" autocomplete="off">JSON
+                  </label>
+                </div>
+              </div>
+              <div class="btn-group btn-group-xs" role="group">
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-xs btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Database
+                    <span class="caret"></span>
+                  </button>
+                  <ul id="dbSelector" class="dropdown-menu">
+                    <li class="template hidden"><a></a></li>
+                  </ul>
+                </div>
+                <div class="modal fade" id="modal" tabindex="-1" role="dialog">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="modalLabel">Graph Viewer</h4>
+                      </div>
+                      <div class="modal-body">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div id="textEditor" class="hidden"><textarea id="editor1"></textarea></div>
+              <div id="graphEditor" style="height: 250px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="btn-group btn-group-xs" role="group">
+                <div class="btn-group" role="group">
+                  <button id="rootTypeSelectorButton" type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="buttonText">Type</span>
+                    <span class="caret"></span>
+                  </button>
+                  <ul id="rootTypeSelector" class="dropdown-menu">
+                    <li class="template hidden"><a href="#"></a></li>
+                  </ul>
+                </div>
+                <button id="run" type="button" class="btn btn-xs btn-warning">Run query</button>
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-xs btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Examples
+                    <span class="caret"></span>
+                  </button>
+                  <ul id="exampleSelector" class="dropdown-menu">
+                    <li class="template hidden"><a></a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <textarea id="editor2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="btn-group btn-group-xs" role="group">
+                <button id="clear" type="button" class="btn btn-xs btn-warning">Clear</button>
+              </div>
+            </div>
+            <div class="row">
+              <pre><code id="result"></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="download" class="well well-sm container-fluid">
+    <h1>Download</h1>
+    <p>Browser: <a class="btn" href="JsonRegExpGraphQueryLanguage.js">jrQGL.0.9.0-beta+2016.12.30.js</a></p>
+    <p>Node.js: <a class="btn disabled" href="https://www.npmjs.com/package/jrgql">jrgql</a></p>
+  </div>
+  <div id="changelog" class="well well-sm container-fluid">
+    <h1>Changelog</h1>
+    <ul>
+      <li>
+        <p>Latest jrGQL is <b>v0.9.0-beta+2016.12.31</b> (see <a href="http://semver.org/spec/v2.0.0.html">Semver 2.0.0</a>).</p>
+        <p>Initial implementation.</p>
+      </li>
+    </ul>
+  </div>
+  <div id="drivers" class="well well-sm container-fluid">
+    <h1>Drivers</h1>
+    <p>Dummy in-memory Database <a class="btn" href="Database.js">Database.js</a>. This is used on this page.</p>
+    <p>More coming soon...</p>
+  </div>
+  <div id="license" class="well well-sm container-fluid">
+    <h1>License</h1>
+    <p>MIT, &#169; Tamás Gémes</p>
+  </div>
+  <div id="footer" class="well well-sm">
+    <div class="container-fluid">
+      <div class="col-sm-11"><small>jrGQL by Jamesgt</small></div>
+      <div class="col-sm-1"><small>2016</small></div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    "use strict"
+    $(() => { new LandingPage(exports.examples).render() })
+  </script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-56642169-3', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
