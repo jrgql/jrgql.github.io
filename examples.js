@@ -23,7 +23,7 @@ exports.examples = {
       {
         "title": "jrGQL",
         "description": [
-          "A minimalistic query language",
+          "A minimalist query language",
           "James RegExp Graph Query Language. Just kidding, no one names a QL about himself.",
           "<strong>JSON RegExp Graph Query Language</strong>. jr is small, so you can read it as junior, GQL is capitalized because it is more readable than gql.",
           "Write standard JSON to search and use regular expressions to filter keys and search values.",

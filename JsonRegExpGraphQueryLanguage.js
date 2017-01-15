@@ -1,6 +1,6 @@
 "use strict"
 
-this.exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
+exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
 
   constructor(db, actions) {
     this.db = db
