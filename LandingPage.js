@@ -10,7 +10,7 @@ exports.LandingPage = class LandingPage {
       "intro": new Database(this.examples["intro"]),
       "usergroup": new Database(this.examples["usergroup"]),
     }
-    let actions = {
+    this.actions = {
       "type.reset": (type, parameters) => {
         if (type != "Address") {
           return "NOK"
@@ -42,7 +42,7 @@ exports.LandingPage = class LandingPage {
     }
     this.qls = {
       "intro": new JsonRegExpGraphQueryLanguage(this.dbs["intro"]),
-      "usergroup": new JsonRegExpGraphQueryLanguage(this.dbs["usergroup"], actions),
+      "usergroup": new JsonRegExpGraphQueryLanguage(this.dbs["usergroup"], this.actions),
     }
     this.gdbe = new GraphDbEditor("#graphEditor")
   }
@@ -167,6 +167,13 @@ exports.LandingPage = class LandingPage {
       foldGutter: true,
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter", "CodeMirror-lint-markers"]
     })
+    CodeMirror.commands["save"] = (editor) => {
+      if (editor != this.editor1) {
+        return
+      }
+      this.dbs[this.selectedDb] = new Database(JSON.parse(editor.doc.getValue()))
+      this.qls[this.selectedDb] = new JsonRegExpGraphQueryLanguage(this.dbs[this.selectedDb], this.actions)
+    }
     $("#fullScreen").click((e) => {
       $("#graphEditor svg").appendTo($(".modal-body"))
       this.gdbe.zoomToFit()
