@@ -51,6 +51,8 @@
     .modal-dialog { width: 98%; height: 92%; padding: 0; }
     .modal-content { height: 99%; }
     .modal-body { height: 91%; }
+    #features table th { text-align: center; }
+    #features table td { text-align: center; }
   </style>
 </head>
 <body>
@@ -63,6 +65,7 @@
         <ul class="nav navbar-nav">
           <li class="active"><a href="#">Examples</a></li>
           <li><a href="#try">Try</a></li>
+          <li><a href="#features">Features</a></li>
           <li><a href="#download">Download</a></li>
           <li><a href="#changelog">Changelog</a></li>
           <li><a href="#drivers">Drivers</a></li>
@@ -194,6 +197,19 @@
         </div>
       </div>
     </div>
+  </div>
+  <div id="features" class="well well-sm container-fluid">
+    <h1>Features</h1>
+    <table class="table table-condensed table-bordered table-hover table-striped">
+      <thead><tr><th>Feature</th><th>jrGQL</th><th>GraphQL</th><th>Gremlin</th><th>Cypher</th></tr></thead>
+      <tbody>
+        <tr><td>New language</td><td class="success">No</td><td class="danger">Yes</td><td class="danger">Yes</td><td class="danger">Yes</td></tr>
+        <tr><td>Direct data language</td><td class="success">Yes</td><td class="warning">Yes*</td><td class="danger">No</td><td class="danger">No</td></tr>
+        <tr><td>Strictly typed</td><td class="success">No</td><td class="danger">Yes</td><td class="success">No</td><td class="success">No</td></tr>
+        <tr><td>Metadata support</td><td class="success">Yes</td><td class="warning"><a href="https://github.com/graphql-java/graphql-java/issues/183">No*</a></td><td class="success"><a href="http://sql2gremlin.com/#_select_all">Yes</a></td><td class="danger"><a href="https://stackoverflow.com/questions/17735005/how-can-i-return-all-properties-for-a-node-using-cypher">No</a></td></tr>
+        <tr><td>Regex support</td><td class="success">Yes</td><td class="danger"><a href="https://stackoverflow.com/questions/37981269/how-to-search-string-values-in-graphql">No</a></td><td class="success"><a href="https://markorodriguez.com/2011/06/15/graph-pattern-matching-with-gremlin-1-1/">Yes</a></td><td class="success">Yes</td></tr>
+      </tbody>
+    </table>
   </div>
   <div id="download" class="well well-sm container-fluid">
     <h1>Download</h1>
