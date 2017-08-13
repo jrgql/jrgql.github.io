@@ -6,9 +6,12 @@ exports.LandingPage = class LandingPage {
     this.examples = examples
     this.dbNames = ["intro", "usergroup"]
     this.selectedDb = localStorage.getItem("org.jrgql.selectedDb") || this.dbNames[0]
+  }
+
+  async init() {
     this.dbs = {
-      "intro": new Database(this.examples["intro"]),
-      "usergroup": new Database(this.examples["usergroup"]),
+      "intro": await this.createAndInitDb(this.examples["intro"]),
+      "usergroup": await this.createAndInitDb(this.examples["usergroup"]),
     }
     this.actions = {
       "type.reset": (type, parameters) => {
@@ -47,6 +50,12 @@ exports.LandingPage = class LandingPage {
     this.gdbe = new GraphDbEditor("#graphEditor")
   }
 
+  async createAndInitDb(content) {
+    const db = new Database(content)
+    await db.init(content)
+    return db
+  }
+
   select(db, index) {
     let test = this.examples[db].tests[index]
     let description = test.description
@@ -62,9 +71,10 @@ exports.LandingPage = class LandingPage {
     $("#code2").html(JsonHighlighter.prepare(test.output, test.indentation))
   }
 
-  render() {
+  async render() {
+    await this.init()
     this.renderExamples()
-    this.runTests()
+    await this.runTests()
     this.scrollToSelection(...document.location.href.split("#"))
     this.setupEditor()
     this.setupEditorsContents()
@@ -90,12 +100,13 @@ exports.LandingPage = class LandingPage {
       .collapse((localStorage.getItem("org.jrgql.showExamples") || "true") == "true"? "show": "hide")
   }
 
-  runTests() {
+  async runTests() {
     for(let dbName of this.dbNames) {
-      this.examples[dbName].tests.forEach((test, i) => {
+      for(let i = 0; i < this.examples[dbName].tests.length; i++) {
+        const test = this.examples[dbName].tests[i]
         let results
         try {
-          results = this.qls[dbName].query(test.rootType, test.input)
+          results = await this.qls[dbName].query(test.rootType, test.input)
           test.indentation = this.qls[dbName].indentation
           let equals = _.isEqual(results, test.output)
           if (!equals) {
@@ -103,13 +114,13 @@ exports.LandingPage = class LandingPage {
           }
           $(`.list-group-item[data-index=${i}][data-db=${dbName}]`).addClass("list-group-item-success")
         } catch (e) {
-          console.error("FAIL", test.title + ":", results, ", but expected", test.output, e)
+          console.error("FAIL", test.title + ":", results, ", but expected", test.output, e.message)
           $(`.list-group-item[data-index=${i}][data-db=${dbName}]`).addClass("list-group-item-danger")
         }
         if (!results) {
           results = ""
         }
-      })
+      }
     }
   }
 
@@ -167,11 +178,11 @@ exports.LandingPage = class LandingPage {
       foldGutter: true,
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter", "CodeMirror-lint-markers"]
     })
-    CodeMirror.commands["save"] = (editor) => {
+    CodeMirror.commands["save"] = async (editor) => {
       if (editor != this.editor1) {
         return
       }
-      this.dbs[this.selectedDb] = new Database(JSON.parse(editor.doc.getValue()))
+      this.dbs[this.selectedDb] = await this.createAndInitDb(JSON.parse(editor.doc.getValue()))
       this.qls[this.selectedDb] = new JsonRegExpGraphQueryLanguage(this.dbs[this.selectedDb], this.actions)
     }
     $("#fullScreen").click((e) => {
@@ -183,9 +194,9 @@ exports.LandingPage = class LandingPage {
       $(".modal-body svg").appendTo($("#graphEditor"))
       this.gdbe.zoomToFit()
     })
-    $("button#run").click((e) => {
+    $("button#run").click(async (e) => {
       let q = JSON.parse(this.editor2.doc.getValue())
-      let results = this.qls[this.selectedDb].query(this.selectedRootType, q)
+      let results = await this.qls[this.selectedDb].query(this.selectedRootType, q)
       $("#result").html(JsonHighlighter.prepare(results, this.qls[this.selectedDb].indentation))
     })
     $("button#clear").click((e) => {

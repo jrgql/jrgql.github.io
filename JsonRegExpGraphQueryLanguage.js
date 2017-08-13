@@ -2,7 +2,7 @@
 
 exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
 
-  constructor(db, actions) {
+  constructor(db, actions={}) {
     this.db = db
     this.actions = actions
     this.operators = [
@@ -35,7 +35,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
     return qc
   }
 
-  query(type, q, keyToRemove) {
+  async query(type, q, keyToRemove) {
     if (q["!indentation"]) {
       this.indentation = q["!indentation"]
     }
@@ -49,7 +49,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
     // multiple queries
     if (q instanceof Array) {
       for(let qi of q) {
-        results.push(this.copy(this.query(type, qi, keyToRemove)))
+        results.push(this.copy(await this.query(type, qi, keyToRemove)))
       }
       return results
     }
@@ -61,7 +61,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
     if (q["!"]) {
       if (q["!"] instanceof Array) {
         for(let op of q["!"]) {
-          results.push(this.query(type, { "!": op }, keyToRemove))
+          results.push(await this.query(type, { "!": op }, keyToRemove))
         }
         return results
       }
@@ -74,7 +74,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
     }
     // create
     if (q["+"]) {
-      return [this.db.create(type, q["+"])]
+      return [await this.db.create(type, q["+"])]
     }
     // delete
     let deleteResultsFromDb = false
@@ -87,7 +87,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
       let qc = this.copy(q)
       let object = qc[this.db.idMember]
       delete qc[this.db.idMember]
-      let ret = this.doQuery(type, qc, object, keyToRemove, deleteResultsFromDb)
+      let ret = await this.doQuery(type, qc, object, keyToRemove, deleteResultsFromDb)
       if (ret) {
         results.push(ret)
       } else {
@@ -108,8 +108,9 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
       }
       let i = 0
       for(let object = iterator.next(); !object.done; object = iterator.next()) {
+        const objectValue = await object.value
         if (from instanceof Object) {
-          if (!this.doQuery(type, from, object.value)) {
+          if (!await this.doQuery(type, from, objectValue)) {
             i++
             continue
           }
@@ -117,7 +118,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
           i++
           continue
         }
-        let ret = this.doQuery(type, q, object.value, keyToRemove, deleteResultsFromDb)
+        let ret = await this.doQuery(type, q, objectValue, keyToRemove, deleteResultsFromDb)
         if (!ret) {
           continue
         }
@@ -134,7 +135,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
     return results
   }
 
-  doQuery(type, q, object, keyToRemove, deleteResultsFromDb) {
+  async doQuery(type, q, object, keyToRemove, deleteResultsFromDb) {
     let match = this.match(q, object)
     if (!match.match) {
       return null
@@ -143,12 +144,12 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
     if (match.update) {
       q = this.copyQueryAndExtendWithIdMember(q)
     }
-    let ret = this.filter(type, q, object, keyToRemove)
+    let ret = await this.filter(type, q, object, keyToRemove)
     if (Object.keys(ret.result).length == 0) {
       return null
     }
     if (deleteResultsFromDb) {
-      this.db.delete(type, ret.result)
+      await this.db.delete(type, ret.result)
     }
     // update
     if (match.update) {
@@ -156,12 +157,12 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
         ret.result[key] = ret.updates[key]
       }
       ret.updates[this.db.idMember] = ret.result[this.db.idMember]
-      this.db.update(type, ret.updates)
+      await this.db.update(type, ret.updates)
     }
     return ret.result
   }
 
-  filter(type, query, object, keyToRemove) {
+  async filter(type, query, object, keyToRemove) {
     let result = {}
     let updates = {}
     for(let queryKey in query) {
@@ -199,7 +200,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
       if (!isValueArray) {
         let subQuery = this.copy(queryValue)
         subQuery[this.db.idMember] = object[search]
-        let ret = this.query(this.db.getTypeOf(type, search), subQuery, this.db.idMember)
+        let ret = await this.query(this.db.getTypeOf(type, search), subQuery, this.db.idMember)
         if (!ret) {
           continue
         }
@@ -210,7 +211,7 @@ exports.JsonRegExpGraphQueryLanguage = class JsonRegExpGraphQueryLanguage {
       if (queryValue[0] instanceof Object) {
         let subQuery = this.copy(queryValue[0])
         subQuery[this.db.idMember + "?"] = object[search].join("|")
-        result[search] = this.query(this.db.getTypeOf(type, search), subQuery, this.db.idMember)
+        result[search] = await this.query(this.db.getTypeOf(type, search), subQuery, this.db.idMember)
         continue
       }
       // matchArray

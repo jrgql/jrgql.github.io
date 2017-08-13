@@ -2,19 +2,27 @@
 
 exports.Database = class Database {
 
-  constructor({idMember="_id", types={}, values={}}) {
+  constructor({idMember="_id"}) {
     this.idMember = idMember
+    this.maxId = 1
+  }
+
+  async init({types={}, values={}}) {
     this.types = types
     this.values = {}
-    this.maxId = 1
     for(let type in this.types) {
+      await this.drop(type)
       if (!(this.types[type] instanceof Object)) {
         continue
       }
       for(let v of values[type]) {
-        this.create(type, v)
+        await this.create(type, v)
       }
     }
+  }
+
+  async drop(type) {
+    this.values[type] = []
   }
 
   isTypeValid(type) {
@@ -37,11 +45,11 @@ exports.Database = class Database {
       throw(new Error("Invalid type: " + type))
     }
     for(let v of this.values[type]) {
-      yield v
+      yield Promise.resolve(v)
     }
   }
 
-  create(type, value) {
+  async create(type, value) {
     let v = JSON.parse(JSON.stringify(value))
     v[this.idMember] = this.maxId++
     if (!this.values[type]) {
@@ -51,11 +59,11 @@ exports.Database = class Database {
     return v
   }
 
-  delete(type, value) {
+  async delete(type, value) {
     this.values[type].splice(this.values[type].findIndex((e) => e[this.idMember] == value[this.idMember]), 1)
   }
 
-  update(type, value) {
+  async update(type, value) {
     let target = this.values[type].find((v) => v[this.idMember] == value[this.idMember])
     for(let k in value) {
       target[k] = value[k]
