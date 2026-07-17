@@ -1,6 +1,6 @@
 {
   "name": "jrgql",
-  "version": "0.9.4-beta+2017.08.13",
+  "version": "0.9.5-beta+2026.07.17",
   "description": "A minimalist query language. In JSON.",
   "main": "index.js",
   "keywords": [
@@ -10,9 +10,9 @@
     "query",
     "language"
   ],
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/jrgql/jrgql.github.io.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrgql/jrgql.github.io.git"
   },
   "url": "https://github.com/jrgql/jrgql.github.io/issues",
   "author": "Jamesgt",
